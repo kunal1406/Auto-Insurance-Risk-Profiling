@@ -5,3 +5,10 @@ matplotlib
 seaborn
 scikit-learn
 imbalanced-learn
+python-box==6.0.2
+pyYAML
+tqdm
+ensure==1.0.2
+joblib
+types-PyYAML
+-e .
