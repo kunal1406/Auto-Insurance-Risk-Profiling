@@ -1,1 +1,16 @@
-key : value
+COLUMNS:
+  pol_number: int64
+  pol_eff_dt: string  # Assuming date is handled as string for this format
+  gender: string
+  agecat: int64
+  date_of_birth: string  # Assuming date is handled as string for this format
+  credit_score: float64
+  area: string
+  traffic_index: float64
+  veh_age: int64
+  veh_body: string
+  veh_value: float64
+  claim_office: string
+  numclaims: int64
+  claimcst0: float64
+  annual_premium: float64
