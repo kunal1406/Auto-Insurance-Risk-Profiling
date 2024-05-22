@@ -12,3 +12,20 @@ data_validation:
   root_dir: artifacts/data_validation
   unzip_data_dir: artifacts/data_ingestion/auto_policies_2017.csv
   STATUS_FILE: artifacts/data_validation/status.txt
+
+data_transformation:
+  root_dir: artifacts/data_transformation
+  train_data_path: artifacts/data_ingestion/auto_policies_2017.csv
+  test_data_path: artifacts/data_ingestion/auto_potential_customers_2018.csv
+
+class_model_trainer:
+  root_dir: artifacts/model_trainer
+  train_data_class_path: artifacts/data_transformation/processed_train_class_data.csv
+  test_data_path: artifacts/data_transformation/Processed_test_data.csv
+  model_class_name: class_model.joblib
+
+reg_model_trainer:
+  root_dir: artifacts/model_trainer
+  train_data_reg_path: artifacts/data_transformation/processed_train_reg_data.csv
+  test_data_path: artifacts/data_transformation/Processed_test_data.csv
+  model_reg_name: reg_model.joblib

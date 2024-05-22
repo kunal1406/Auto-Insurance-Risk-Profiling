@@ -1,1 +1,13 @@
-key : value
+GradientBoostingClassifier :
+  n_estimators: 100
+  learning_rate: 0.1
+  max_depth: 4
+  min_samples_leaf: 5
+  max_features: 0.3
+
+GradientBoostingRegressor:
+  n_estimators: 200
+  learning_rate: 0.05
+  max_depth: 6
+  min_samples_leaf: 5
+  max_features: 0.3

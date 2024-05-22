@@ -1,6 +1,6 @@
 from AutoInsurance.constants import *
 from AutoInsurance.utils.common import read_yaml, create_directories 
-from AutoInsurance.entity.config_entity import (DataIngestionConfig, DataValidationConfig)
+from AutoInsurance.entity.config_entity import (DataIngestionConfig, DataValidationConfig, DataTransformationConfig, ClassModelTrainerConfig, RegModelTrainerConfig)
 
 class ConfigurationManager:
     def __init__(
@@ -45,3 +45,56 @@ class ConfigurationManager:
         )
 
         return data_validation_config
+    
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        config = self.config.data_transformation
+
+        create_directories([config.root_dir])
+
+        data_transformation_config = DataTransformationConfig(
+            root_dir= config.root_dir,
+            train_data_path= config.train_data_path,
+            test_data_path= config.test_data_path,
+        )
+
+        return data_transformation_config
+    
+    def get_class_model_trainer_config(self) -> ClassModelTrainerConfig:
+        config = self.config.class_model_trainer
+        params = self.params.GradientBoostingClassifier
+
+        create_directories([config.root_dir])
+
+        class_model_trainer_config = ClassModelTrainerConfig(
+            root_dir= config.root_dir,
+            train_data_class_path= config.train_data_class_path,
+            test_data_path= config.test_data_path,
+            model_class_name= config.model_class_name,
+            n_estimators= params.n_estimators,
+            learning_rate= params.learning_rate,
+            max_depth= params.max_depth,
+            min_samples_leaf= params.min_samples_leaf,
+            max_features= params.max_features,
+        )
+
+        return class_model_trainer_config
+    
+    def get_reg_model_trainer_config(self) -> RegModelTrainerConfig:
+        config = self.config.reg_model_trainer
+        params = self.params.GradientBoostingRegressor
+
+        create_directories([config.root_dir])    
+
+        reg_model_trainer_config = RegModelTrainerConfig(
+            root_dir= config.root_dir,
+            train_data_reg_path= config.train_data_reg_path,
+            test_data_path= config.test_data_path,
+            model_reg_name= config.model_reg_name,
+            n_estimators= params.n_estimators,
+            learning_rate= params.learning_rate,
+            max_depth= params.max_depth,
+            min_samples_leaf= params.min_samples_leaf,
+            max_features= params.max_features,
+        )
+
+        return reg_model_trainer_config     
