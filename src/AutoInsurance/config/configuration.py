@@ -1,6 +1,7 @@
 from AutoInsurance.constants import *
 from AutoInsurance.utils.common import read_yaml, create_directories 
-from AutoInsurance.entity.config_entity import (DataIngestionConfig, DataValidationConfig, DataTransformationConfig, ClassModelTrainerConfig, RegModelTrainerConfig)
+from AutoInsurance.entity.config_entity import (DataIngestionConfig, DataValidationConfig, DataTransformationConfig, 
+                                                ClassModelTrainerConfig, RegModelTrainerConfig, ClassModelEvaluationConfig, RegModelEvaluationConfig)
 
 class ConfigurationManager:
     def __init__(
@@ -97,4 +98,40 @@ class ConfigurationManager:
             max_features= params.max_features,
         )
 
-        return reg_model_trainer_config     
+        return reg_model_trainer_config  
+
+    def get_class_model_evaluation_config(self) -> ClassModelEvaluationConfig:
+        config = self.config.class_model_evaluation
+        params = self.params.GradientBoostingClassifier
+
+        create_directories([config.root_dir])
+
+        class_model_evaluation_config = ClassModelEvaluationConfig(
+            root_dir=config.root_dir,
+            train_data_path = config.train_data_class_path,
+            test_data_path= config.test_data_path,
+            class_model_path = config.class_model_path,
+            all_params= params,
+            class_metric_file_name = config.class_metric_file_name,
+            mlflow_uri = "https://dagshub.com/kunal1406/Auto-Insurance-Risk-Profiling.mlflow"
+        )
+
+        return class_model_evaluation_config
+    
+    def get_reg_model_evaluation_config(self) -> RegModelEvaluationConfig:
+        config = self.config.reg_model_evaluation
+        params = self.params.GradientBoostingRegressor
+
+        create_directories([config.root_dir])
+
+        reg_model_evaluation_config = RegModelEvaluationConfig(
+            root_dir=config.root_dir,
+            train_data_path = config.train_data_reg_path,
+            test_data_path= config.test_data_path,
+            reg_model_path = config.reg_model_path,
+            all_params= params,
+            reg_metric_file_name = config.reg_metric_file_name,
+            mlflow_uri = "https://dagshub.com/kunal1406/Auto-Insurance-Risk-Profiling.mlflow"
+        )
+
+        return reg_model_evaluation_config   

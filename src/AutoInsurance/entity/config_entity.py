@@ -47,3 +47,23 @@ class RegModelTrainerConfig:
     max_features: float
     min_samples_leaf: int
     n_estimators: int
+
+@dataclass(frozen=True)
+class ClassModelEvaluationConfig:
+    root_dir: Path
+    train_data_path: Path
+    test_data_path: Path
+    class_model_path: Path
+    all_params: dict
+    class_metric_file_name: Path
+    mlflow_uri: str
+
+@dataclass(frozen=True)
+class RegModelEvaluationConfig:
+    root_dir: Path
+    train_data_path: Path
+    test_data_path: Path
+    reg_model_path: Path
+    all_params: dict
+    reg_metric_file_name: Path
+    mlflow_uri: str

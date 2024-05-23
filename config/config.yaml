@@ -29,3 +29,17 @@ reg_model_trainer:
   train_data_reg_path: artifacts/data_transformation/processed_train_reg_data.csv
   test_data_path: artifacts/data_transformation/Processed_test_data.csv
   model_reg_name: reg_model.joblib
+
+class_model_evaluation:
+  root_dir: artifacts/model_evaluation
+  train_data_class_path: artifacts/data_transformation/processed_train_class_data.csv
+  test_data_path: artifacts/data_transformation/Processed_test_data.csv
+  class_model_path: artifacts/model_trainer/class_model.joblib
+  class_metric_file_name: artifacts/model_evaluation/class_metrics.json
+
+reg_model_evaluation:
+  root_dir: artifacts/model_evaluation
+  train_data_reg_path: artifacts/data_transformation/processed_train_reg_data.csv
+  test_data_path: artifacts/data_transformation/Processed_test_data.csv
+  reg_model_path: artifacts/model_trainer/reg_model.joblib
+  reg_metric_file_name: artifacts/model_evaluation/reg_metrics.json
