@@ -1,7 +1,8 @@
 from AutoInsurance.constants import *
 from AutoInsurance.utils.common import read_yaml, create_directories 
 from AutoInsurance.entity.config_entity import (DataIngestionConfig, DataValidationConfig, DataTransformationConfig, 
-                                                ClassModelTrainerConfig, RegModelTrainerConfig, ClassModelEvaluationConfig, RegModelEvaluationConfig)
+                                                ClassModelTrainerConfig, RegModelTrainerConfig, ClassModelEvaluationConfig,
+                                                  RegModelEvaluationConfig, PredictionsConfig)
 
 class ConfigurationManager:
     def __init__(
@@ -135,3 +136,19 @@ class ConfigurationManager:
         )
 
         return reg_model_evaluation_config   
+    
+    def get_predictions_config(self) -> PredictionsConfig:
+        config = self.config.predictions
+
+        create_directories([config.root_dir])
+        predictions_config =  PredictionsConfig(
+            root_dir = Path(config.root_dir),
+            threshold_path = Path(config.threshold_path),
+            test_data_path = Path(config.test_data_path),
+            class_model_path = Path(config.class_model_path),
+            reg_model_path = Path(config.reg_model_path),
+            potential_customers_data_path = Path(config.potential_customers_data_path),
+            potential_customers_with_predictions_data_path = Path(config.potential_customers_with_predictions_data_path)
+        )
+    
+        return predictions_config    

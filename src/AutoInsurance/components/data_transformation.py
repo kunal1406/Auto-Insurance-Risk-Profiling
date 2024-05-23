@@ -104,6 +104,7 @@ class DataTransformation:
         reg_train_data['log_amount'] = y_reg
 
         # Save the processed data
+        clean_data_2018.to_csv(os.path.join(self.config.root_dir, "potential_customers.csv"), index=False)
         class_train_data.to_csv(os.path.join(self.config.root_dir,"processed_train_class_data.csv"), index=False)
         reg_train_data.to_csv(os.path.join(self.config.root_dir,"processed_train_reg_data.csv"), index=False)
         x_test_class.to_csv(os.path.join(self.config.root_dir,"Processed_test_data.csv"), index=False)

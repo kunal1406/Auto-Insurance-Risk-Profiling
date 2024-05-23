@@ -43,3 +43,12 @@ reg_model_evaluation:
   test_data_path: artifacts/data_transformation/Processed_test_data.csv
   reg_model_path: artifacts/model_trainer/reg_model.joblib
   reg_metric_file_name: artifacts/model_evaluation/reg_metrics.json
+
+predictions:
+  root_dir: artifacts/predictions
+  threshold_path: artifacts/model_evaluation/class_metrics.json
+  class_model_path: artifacts/model_trainer/class_model.joblib
+  reg_model_path: artifacts/model_trainer/reg_model.joblib
+  test_data_path: artifacts/data_transformation/Processed_test_data.csv
+  potential_customers_data_path: artifacts/data_transformation/potential_customers.csv
+  potential_customers_with_predictions_data_path: artifacts/predictions/potential_customers_with_predictions.csv

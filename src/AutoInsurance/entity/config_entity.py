@@ -67,3 +67,13 @@ class RegModelEvaluationConfig:
     all_params: dict
     reg_metric_file_name: Path
     mlflow_uri: str
+
+@dataclass(frozen=True)
+class PredictionsConfig:
+    root_dir: Path
+    test_data_path: Path
+    threshold_path: Path
+    class_model_path: Path
+    reg_model_path: Path
+    potential_customers_data_path: Path
+    potential_customers_with_predictions_data_path: Path
