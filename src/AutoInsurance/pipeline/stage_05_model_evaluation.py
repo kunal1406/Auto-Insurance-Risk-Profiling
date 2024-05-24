@@ -14,10 +14,11 @@ class ModelEvaluationTrainingPipeline:
         class_model_evaluation_config = config.get_class_model_evaluation_config()
         class_model_evaluation_config = ClassModelEvaluation(config=class_model_evaluation_config)
         class_model_evaluation_config.log_into_mlflow()
-
+        logger.info("logged into mlflow for classification")
         reg_model_evaluation_config = config.get_reg_model_evaluation_config()
         reg_model_evaluation_config = RegModelEvaluation(config=reg_model_evaluation_config)
         reg_model_evaluation_config.log_into_mlflow()
+        logger.info("logged into mlflow for regression")
 
 if __name__ == '__main__':
     try:

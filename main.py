@@ -5,6 +5,7 @@ from AutoInsurance.pipeline.stage_03_data_transformation import DataTransformati
 from AutoInsurance.pipeline.stage_04_model_trainer import ModelTrainerTrainingPipeline
 from AutoInsurance.pipeline.stage_05_model_evaluation import ModelEvaluationTrainingPipeline
 from AutoInsurance.pipeline.stage_06_predictions import PredictionsTrainingPipeline
+from AutoInsurance.pipeline.stage_07_risk_profiles import RiskProfilesPipeline
 
 STAGE_NAME = "Data Ingestion stage"
 try:
@@ -61,6 +62,16 @@ STAGE_NAME = "Predictions stage"
 try:
    logger.info(f">>>>>> stage {STAGE_NAME} started <<<<<<") 
    data_ingestion = PredictionsTrainingPipeline()
+   data_ingestion.main()
+   logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<\n\nx==========x")
+except Exception as e:
+        logger.exception(e)
+        raise e
+
+STAGE_NAME = "Risk Profiling stage"
+try:
+   logger.info(f">>>>>> stage {STAGE_NAME} started <<<<<<") 
+   data_ingestion = RiskProfilesPipeline()
    data_ingestion.main()
    logger.info(f">>>>>> stage {STAGE_NAME} completed <<<<<<\n\nx==========x")
 except Exception as e:

@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/KUNAL%20MEHTA/Desktop/Data%20Science%20Training/Projects/Auto-Insurance-Risk-Profiling/mlruns/0/f99bb37de4984d2eb8a55f50d9ce9173/artifacts
+end_time: 1716503307355
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f99bb37de4984d2eb8a55f50d9ce9173
+run_name: clean-mole-500
+run_uuid: f99bb37de4984d2eb8a55f50d9ce9173
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1716503281549
+status: 3
+tags: []
+user_id: KUNAL MEHTA

@@ -52,3 +52,8 @@ predictions:
   test_data_path: artifacts/data_transformation/Processed_test_data.csv
   potential_customers_data_path: artifacts/data_transformation/potential_customers.csv
   potential_customers_with_predictions_data_path: artifacts/predictions/potential_customers_with_predictions.csv
+
+risk_profiles:
+  root_dir: artifacts/risk_profiles
+  potential_customers_with_predictions_data_path: artifacts/predictions/potential_customers_with_predictions.csv
+  risk_profiles_path: artifacts/risk_profiles/risk_profiles.csv

@@ -77,3 +77,10 @@ class PredictionsConfig:
     reg_model_path: Path
     potential_customers_data_path: Path
     potential_customers_with_predictions_data_path: Path
+
+@dataclass(frozen=True)
+class RiskProfilesConfig:
+    root_dir: Path
+    potential_customers_with_predictions_data_path: Path
+    risk_profiles_path: Path
+    params: dict

@@ -23,6 +23,7 @@ import mlflow.sklearn
 from pathlib import Path
 from AutoInsurance.utils.common import save_json
 from AutoInsurance.entity.config_entity import (ClassModelEvaluationConfig, RegModelEvaluationConfig)
+from AutoInsurance.utils.common import logger
 
 
 class ClassModelEvaluation:
@@ -65,15 +66,15 @@ class ClassModelEvaluation:
         report = classification_report(true_full, predicted_labels, output_dict=True)
         print(report)
 
-        return cv_scores, optimal_threshold, report
+        return gb, cv_scores, optimal_threshold, report
 
     def evaluate_model(self, X, y):
-        cv_scores, optimal_threshold, report = self.perform_k_fold(X, y)
+        gb, cv_scores, optimal_threshold, report = self.perform_k_fold(X, y)
         mean_score = np.mean(cv_scores)
         std_score = np.std(cv_scores)
         print(f"Mean roc_auc_score: {mean_score}")
         print(f"Std roc_auc_score: {std_score}")
-        return mean_score, std_score, optimal_threshold, report
+        return gb, mean_score, std_score, optimal_threshold, report
     def log_into_mlflow(self):
 
         mlflow.set_registry_uri(self.config.mlflow_uri)
@@ -86,7 +87,7 @@ class ClassModelEvaluation:
             print(X.shape)
             y = data['claim']
             print(y.shape)
-            roc_auc_score, std_roc_auc_score, optimal_threshold, report = self.evaluate_model(X, y)
+            model, roc_auc_score, std_roc_auc_score, optimal_threshold, report = self.evaluate_model(X, y)
 
             scores = {"roc_auc_score": roc_auc_score, "optimal_threshold": optimal_threshold}
             save_json(path=Path(self.config.class_metric_file_name), data=scores)
@@ -100,6 +101,16 @@ class ClassModelEvaluation:
                 if label not in ["accuracy", "macro avg", "weighted avg"]:
                     for metric_name, metric_value in metric.items():
                         mlflow.log_metric(f"{label}_{metric_name}", metric_value)
+
+            if tracking_url_type_store != "file":
+
+                # Register the model
+                # There are other ways to use the Model Registry, which depends on the use case,
+                # please refer to the doc for more information:
+                # https://mlflow.org/docs/latest/model-registry.html#api-workflow
+                mlflow.sklearn.log_model(model, "model", registered_model_name="GradientBoostingClassifier")
+            else:
+                mlflow.sklearn.log_model(model, "model")
 
 
 class RegModelEvaluation:
@@ -129,27 +140,42 @@ class RegModelEvaluation:
         return r2, rmse, mae, predictions
     
     def log_into_mlflow(self):
-        mlflow.set_registry_uri(self.config.mlflow_uri)
-        tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
 
-        with mlflow.start_run():
-            data = pd.read_csv(self.config.train_data_path)
-            X = data.drop('log_amount', axis=1)
-            y = data['log_amount']
+        try:
+            mlflow.set_registry_uri(self.config.mlflow_uri)
+            tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
 
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=45)
+            with mlflow.start_run():
+                data = pd.read_csv(self.config.train_data_path)
+                X = data.drop('log_amount', axis=1)
+                y = data['log_amount']
 
-            model, cv_scores = self.perform_k_fold(X, y)
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=45)
 
-            r2, rmse, mae, predictions = self.evaluate_model(model, X_train, y_train, X_test, y_test)
+                model, cv_scores = self.perform_k_fold(X, y)
 
-            scores = {"rmse": rmse, "mae": mae, "r2": r2}
-            save_json(path=Path(self.config.reg_metric_file_name), data=scores)
+                r2, rmse, mae, predictions = self.evaluate_model(model, X_train, y_train, X_test, y_test)
 
-            mlflow.log_params(self.config.all_params)
-            mlflow.log_metric("mean_cv_r2_score", np.mean(cv_scores))
-            mlflow.log_metric("std_cv_r2_score", np.std(cv_scores))
-            mlflow.log_metric("r2_score", r2)
-            mlflow.log_metric("rmse", rmse)
-            mlflow.log_metric("mae", mae)
-        
+                scores = {"rmse": rmse, "mae": mae, "r2": r2}
+                save_json(path=Path(self.config.reg_metric_file_name), data=scores)
+
+                mlflow.log_params(self.config.all_params)
+                mlflow.log_metric("mean_cv_r2_score", np.mean(cv_scores))
+                mlflow.log_metric("std_cv_r2_score", np.std(cv_scores))
+                mlflow.log_metric("r2_score", r2)
+                mlflow.log_metric("rmse", rmse)
+                mlflow.log_metric("mae", mae)
+
+                if tracking_url_type_store != "file":
+
+                    # Register the model
+                    # There are other ways to use the Model Registry, which depends on the use case,
+                    # please refer to the doc for more information:
+                    # https://mlflow.org/docs/latest/model-registry.html#api-workflow
+                    mlflow.sklearn.log_model(model, "model", registered_model_name="GradientBoostingRegressor")
+                else:
+                    mlflow.sklearn.log_model(model, "model")
+
+        except Exception as e:
+            logger.exception(f"error logging to MLflow: {e}")
+            
