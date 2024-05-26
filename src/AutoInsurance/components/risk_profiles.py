@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from pathlib import Path
 from AutoInsurance.entity.config_entity import RiskProfilesConfig
+import joblib
 
 class RiskProfiling:
     def __init__(self, config: RiskProfilesConfig):
@@ -19,6 +20,7 @@ class RiskProfiling:
         data[['normalized_claim_probability', 'normalized_claim_amount']] = scaler.fit_transform(
             data[['claim_probability', 'claim_amount']]
         )
+        joblib.dump(scaler, Path('artifacts/risk_profiles/minmax_scaler.pkl'))
         return data
 
     def segment_by_claim_probability(self, data: pd.DataFrame):
