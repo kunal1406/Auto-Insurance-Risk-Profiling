@@ -144,20 +144,21 @@ if action == "Risk Profile Prediction Report":
         data = {
             'gender': gender,
             'agecat': agecat,
-            'credit_score': credit_score,
+            'credit score': credit_score,
             'area': area,
-            'traffic_index': traffic_index,
-            'veh_age': veh_age,
-            'veh_body': veh_body,
-            'veh_value': veh_value
+            'traffic index': traffic_index,
+            'vehicle age': veh_age,
+            'vehicle body': veh_body,
+            'vehicle value': veh_value
         }
         return data
 
     user_data = user_input_features()
 
-    st.subheader('User Input Features')
+    # st.subheader('User Input Features')
     st.write("### User Data Summary")
-    st.json(user_data)
+    # st.json(user_data)
+    st.table(pd.DataFrame(user_data.items(), columns=['Features', 'value']))
 
     if st.button('Predict Risk Profile'):
         claim_likelihood, claim_amount = risk_profile_model.predict(user_data, columns, dtypes)
@@ -167,7 +168,8 @@ if action == "Risk Profile Prediction Report":
         st.success('Risk Profile Predicted Successfully!')
         
         st.write('### Risk Profile Report')
-        st.json(risk_profile)
+        # st.json(risk_profile)
+        st.table(pd.DataFrame(risk_profile.items(), columns=['Key Indicators', 'value']))
 
         st.write("### Detailed Risk Profile")
         col1, col2, col3, col4 = st.columns(4)
