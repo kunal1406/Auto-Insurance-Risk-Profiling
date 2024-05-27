@@ -1,9 +1,14 @@
 ipykernel
+streamlit
 pandas
 numpy
 matplotlib
+scipy
 seaborn
 scikit-learn
+scikit-posthocs
+imblearn
+mlflow
 imbalanced-learn
 python-box==6.0.2
 pyYAML
