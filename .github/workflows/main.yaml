@@ -49,10 +49,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Ensure ECR Repository Exists
-        run: |
-          aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPOSITORY_NAME }} --region ${{ secrets.AWS_REGION }} || aws ecr create-repository --repository-name ${{ secrets.ECR_REPOSITORY_NAME }} --region ${{ secrets.AWS_REGION }}
-
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
