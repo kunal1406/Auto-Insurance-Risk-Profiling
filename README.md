@@ -49,7 +49,7 @@ AWS_ACCESS_KEY_ID=
 
 AWS_SECRET_ACCESS_KEY=
 
-AWS_REGION = us-east-1
+AWS_REGION = us-east-2
 
 AWS_ECR_LOGIN_URI = 193501411007.dkr.ecr.us-east-2.amazonaws.com/autoinsurance
 
