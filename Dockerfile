@@ -1,9 +1,17 @@
-FROM python:3.8-slim-buster
+# Use an official Python runtime as a parent image
+FROM python:3.8-slim
 
-RUN apt update -y && apt install awscli -y
+# Set the working directory in the container
 WORKDIR /app
 
+# Copy the current directory contents into the container at /app
 COPY . /app
-RUN pip install -r requirements.txt
 
-CMD ["python3", "app.py"]
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Expose the port Streamlit will run on
+EXPOSE 8501
+
+# Run Streamlit
+CMD ["streamlit", "run", "app.py"]
