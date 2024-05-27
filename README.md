@@ -51,6 +51,6 @@ AWS_SECRET_ACCESS_KEY=
 
 AWS_REGION = us-east-1
 
-AWS_ECR_LOGIN_URI = demo>>  566373416292.dkr.ecr.ap-south-1.amazonaws.com
+AWS_ECR_LOGIN_URI = 193501411007.dkr.ecr.us-east-2.amazonaws.com/autoinsurance
 
 ECR_REPOSITORY_NAME = autoinsurance
