@@ -54,3 +54,5 @@ AWS_REGION = us-east-2
 AWS_ECR_LOGIN_URI = 193501411007.dkr.ecr.us-east-2.amazonaws.com/autoinsurance
 
 ECR_REPOSITORY_NAME = autoinsurance
+
+http://3.15.44.154:8501/
