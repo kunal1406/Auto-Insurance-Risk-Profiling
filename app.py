@@ -44,12 +44,12 @@ if action == "Risk Profile Prediction Report":
         data = {
             'gender': gender,
             'agecat': agecat,
-            'credit score': credit_score,
+            'credit_score': credit_score,
             'area': area,
-            'traffic index': traffic_index,
-            'vehicle age': veh_age,
-            'vehicle body': veh_body,
-            'vehicle value': veh_value
+            'traffic_index': traffic_index,
+            'veh_age': veh_age,
+            'veh_body': veh_body,
+            'veh_value': veh_value
         }
         return data
 
