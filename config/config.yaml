@@ -57,3 +57,11 @@ risk_profiles:
   root_dir: artifacts/risk_profiles
   potential_customers_with_predictions_data_path: artifacts/predictions/potential_customers_with_predictions.csv
   risk_profiles_path: artifacts/risk_profiles/risk_profiles.csv
+
+user_app:
+  root_dir: artifacts/user_app
+  risk_profiles_path: artifacts/risk_profiles/risk_profiles.csv
+  class_model_path: artifacts/model_trainer/class_model.joblib
+  reg_model_path: artifacts/model_trainer/reg_model.joblib
+  test_data_path: artifacts/data_transformation/Processed_test_data.csv
+  scaler_path: artifacts/risk_profiles/minmax_scaler.pkl

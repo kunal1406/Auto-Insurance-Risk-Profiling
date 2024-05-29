@@ -8,112 +8,12 @@ import seaborn as sns
 import scipy.stats as stats
 import scikit_posthocs as sp
 import io
+from AutoInsurance.pipeline.stage_08_user_app import UserAppPipeline
 
 
-class RiskProfileModel:
-    def __init__(self, model_paths, scaler_path, risk_profile_path):
-        self.class_model = joblib.load(Path(model_paths['class_model']))
-        self.reg_model = joblib.load(Path(model_paths['reg_model']))
-        self.scaler = joblib.load(Path(scaler_path))
-        self.risk_profiles_df = pd.read_csv(risk_profile_path)
-    
-    def transform_user_data_to_df(self, user_data, columns, dtypes):
-        data = {col: np.zeros(1, dtype=dt) if dt == 'float64' else np.zeros(1, dtype=bool) for col, dt in dtypes.items()}
-        df = pd.DataFrame(data)
-        
-        if 'credit_score' in user_data:
-            df['credit_score'] = user_data['credit_score']
-        if 'traffic_index' in user_data:
-            df['traffic_index'] = user_data['traffic_index']
-        if 'veh_value' in user_data:
-            df['veh_value'] = user_data['veh_value']
-        
-        for key, value in user_data.items():
-            if key in ['gender', 'area', 'veh_body', 'agecat', 'veh_age']:
-                column_name = f'{key}_{value}'
-                if column_name in df.columns:
-                    df[column_name] = True
-        
-        return df
-    
-    def predict(self, user_data, columns, dtypes):
-        df = self.transform_user_data_to_df(user_data, columns, dtypes)
-        class_predictions_probs = self.class_model.predict_proba(df)[:, 1]
-        reg_predictions = self.reg_model.predict(df)
-        reg_predictions = np.expm1(reg_predictions)
-        
-        claim_likelihood = class_predictions_probs[0]
-        claim_amount = reg_predictions[0]
-        
-        return claim_likelihood, claim_amount
-    
-    def normalize_predictions(self, claim_likelihood, claim_amount):
-
-        features = pd.DataFrame([[claim_likelihood, claim_amount]], columns=['claim_probability', 'claim_amount'])
-        norm_values = self.scaler.transform(features)
-        normalized_claim_likelihood = norm_values[0, 0]
-        normalized_claim_amount = norm_values[0, 1]
-        
-        return normalized_claim_likelihood, normalized_claim_amount
-    
-    def classify_risk(self, normalized_claim_likelihood, normalized_claim_amount, claim_amount):
-        claim_probability_thresholds = [0.2, 0.45]
-        claim_amount_thresholds = [0.2, 0.45]
-        weights_probability = {'Low': 0.4, 'Medium': 0.5, 'High': 0.6}
-        weights_cost = {'No Claim': 0.3, 'Low': 0.4, 'Medium': 0.5, 'High': 0.6}
-        risk_score_thresholds = [0.2, 0.45]
-        
-        quantiles_prob = self.risk_profiles_df['claim_probability'].quantile(claim_probability_thresholds)
-        if normalized_claim_likelihood <= quantiles_prob.iloc[0]:
-            risk_profile_probability = 'Low'
-        elif normalized_claim_likelihood <= quantiles_prob.iloc[1]:
-            risk_profile_probability = 'Medium'
-        else:
-            risk_profile_probability = 'High'
-        
-        if claim_amount == 0:
-            risk_profile_cost = 'No Claim'
-        else:
-            quantiles_cost = self.risk_profiles_df.loc[self.risk_profiles_df['claim_amount'] > 0, 'claim_amount'].quantile(claim_amount_thresholds)
-            if normalized_claim_amount <= quantiles_cost.iloc[0]:
-                risk_profile_cost = 'Low'
-            elif normalized_claim_amount <= quantiles_cost.iloc[1]:
-                risk_profile_cost = 'Medium'
-            else:
-                risk_profile_cost = 'High'
-        
-        weighted_probability_score = normalized_claim_likelihood * weights_probability[risk_profile_probability]
-        weighted_cost_score = normalized_claim_amount * weights_cost[risk_profile_cost]
-        dynamic_combined_risk_score = weighted_probability_score + weighted_cost_score
-        
-        quantiles_risk = self.risk_profiles_df['dynamic_combined_risk_score'].quantile(risk_score_thresholds)
-        if dynamic_combined_risk_score <= quantiles_risk.iloc[0]:
-            risk_group = 'Low Risk'
-        elif dynamic_combined_risk_score <= quantiles_risk.iloc[1]:
-            risk_group = 'Medium Risk'
-        else:
-            risk_group = 'High Risk'
-        
-        return {
-            'claim_likelihood': claim_likelihood,
-            'claim_amount': claim_amount,
-            'normalized_claim_likelihood': normalized_claim_likelihood,
-            'normalized_claim_amount': normalized_claim_amount,
-            'risk_profile_probability': risk_profile_probability,
-            'risk_profile_cost': risk_profile_cost,
-            'dynamic_combined_risk_score': dynamic_combined_risk_score,
-            'risk_group': risk_group
-        }
-
-
-model_paths = {
-    'class_model': "artifacts/model_trainer/class_model.joblib",
-    'reg_model': 'artifacts/model_trainer/reg_model.joblib'
-}
-scaler_path = 'artifacts/risk_profiles/minmax_scaler.pkl'
-risk_profile_path = 'artifacts/risk_profiles/risk_profiles.csv'
-
-risk_profile_model = RiskProfileModel(model_paths, scaler_path, risk_profile_path)
+user_app = UserAppPipeline()
+risk_profile_model = user_app.main()
+risk_profiles_df = pd.read_csv(risk_profile_model.config.risk_profiles_path)
 
 test = pd.read_csv('artifacts/data_transformation/Processed_test_data.csv')
 columns = test.columns
@@ -164,7 +64,7 @@ if action == "Risk Profile Prediction Report":
     if st.button('Predict Risk Profile'):
         claim_likelihood, claim_amount = risk_profile_model.predict(user_data, columns, dtypes)
         normalized_claim_likelihood, normalized_claim_amount = risk_profile_model.normalize_predictions(claim_likelihood, claim_amount)
-        risk_profile = risk_profile_model.classify_risk(normalized_claim_likelihood, normalized_claim_amount, claim_amount)
+        risk_profile = risk_profile_model.classify_risk(normalized_claim_likelihood, normalized_claim_amount, claim_likelihood, claim_amount)
         
         st.success('Risk Profile Predicted Successfully!')
         
@@ -199,23 +99,24 @@ elif action == "Risk Group Analysis Dashboard":
     # Sidebar selection for statistical analysis
     analysis_type = st.sidebar.selectbox("Select Analysis Type", ["Overview", "Detailed Analysis"])
 
+
     if analysis_type == "Overview":
         st.write("## Overview of Risk Groups")
 
         # Calculate and display summary statistics for each risk group
-        risk_groups = risk_profile_model.risk_profiles_df['risk_group'].unique()
+        risk_groups = risk_profiles_df['risk_group'].unique()
         for group in risk_groups:
             st.write(f"### {group}")
-            group_data = risk_profile_model.risk_profiles_df[risk_profile_model.risk_profiles_df['risk_group'] == group]
+            group_data = risk_profiles_df[risk_profiles_df['risk_group'] == group]
             st.write(group_data.describe())
 
         # Plot distributions
         st.write("### Distributions of Key Features")
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
-        sns.histplot(data=risk_profile_model.risk_profiles_df, x='claim_probability', hue='risk_group', kde=True, ax=axes[0, 0])
-        sns.histplot(data=risk_profile_model.risk_profiles_df, x='claim_amount', hue='risk_group', kde=True, ax=axes[0, 1])
-        sns.histplot(data=risk_profile_model.risk_profiles_df, x='dynamic_combined_risk_score', hue='risk_group', kde=True, ax=axes[1, 0])
-        sns.histplot(data=risk_profile_model.risk_profiles_df, x='credit_score', hue='risk_group', kde=True, ax=axes[1, 1])
+        sns.histplot(data=risk_profiles_df, x='claim_probability', hue='risk_group', kde=True, ax=axes[0, 0])
+        sns.histplot(data=risk_profiles_df, x='claim_amount', hue='risk_group', kde=True, ax=axes[0, 1])
+        sns.histplot(data=risk_profiles_df, x='dynamic_combined_risk_score', hue='risk_group', kde=True, ax=axes[1, 0])
+        sns.histplot(data=risk_profiles_df, x='credit_score', hue='risk_group', kde=True, ax=axes[1, 1])
         plt.tight_layout()
         st.pyplot(fig)
 
@@ -223,10 +124,10 @@ elif action == "Risk Group Analysis Dashboard":
         st.write("## Detailed Analysis of Risk Groups")
 
         # Select a risk group for detailed analysis
-        selected_group = st.selectbox("Select Risk Group", risk_profile_model.risk_profiles_df['risk_group'].unique())
+        selected_group = st.selectbox("Select Risk Group", risk_profiles_df['risk_group'].unique())
 
         st.write(f"### Detailed Analysis for {selected_group}")
-        group_data = risk_profile_model.risk_profiles_df[risk_profile_model.risk_profiles_df['risk_group'] == selected_group]
+        group_data = risk_profiles_df[risk_profiles_df['risk_group'] == selected_group]
         st.write(group_data.describe())
 
         # Plot detailed distributions
@@ -365,7 +266,7 @@ elif action == "Statistical Analysis of Risk Profiles":
     if analysis_type == "Demographic Analysis":
         st.write("## Demographic Analysis")
         demographic_features = ['gender', 'agecat', 'risk_group']
-        df = risk_profile_model.risk_profiles_df[demographic_features].copy()
+        df = risk_profiles_df[demographic_features].copy()
         df['agecat'] = df['agecat'].astype(str)
         st.write("### Descriptive Statistics")
         descriptive_stats = analyze_features(df, demographic_features)
@@ -381,7 +282,7 @@ elif action == "Statistical Analysis of Risk Profiles":
     elif analysis_type == "Financial and Regional Analysis":
         st.write("## Financial and Regional Analysis")
         financial_and_regional_features = ['credit_score', 'area', 'traffic_index', 'risk_group']
-        df = risk_profile_model.risk_profiles_df[financial_and_regional_features].copy()
+        df = risk_profiles_df[financial_and_regional_features].copy()
         st.write("### Descriptive Statistics")
         descriptive_stats = analyze_features(df, financial_and_regional_features)
         display_descriptive_results(descriptive_stats)
@@ -396,7 +297,7 @@ elif action == "Statistical Analysis of Risk Profiles":
     elif analysis_type == "Vehicular Analysis":
         st.write("## Vehicular Analysis")
         vehicular_features = ['veh_age','veh_body','veh_value', 'risk_group']
-        df = risk_profile_model.risk_profiles_df[vehicular_features].copy()
+        df = risk_profiles_df[vehicular_features].copy()
         df['veh_age'] = df['veh_age'].astype(str)
         st.write("### Descriptive Statistics")
         descriptive_stats = analyze_features(df, vehicular_features)

@@ -84,3 +84,13 @@ class RiskProfilesConfig:
     potential_customers_with_predictions_data_path: Path
     risk_profiles_path: Path
     params: dict
+
+@dataclass(frozen=True)
+class UserAppConfig:
+    root_dir: Path
+    risk_profiles_path: Path
+    class_model_path: Path
+    reg_model_path: Path
+    test_data_path: Path
+    scaler_path: Path
+    params: dict
