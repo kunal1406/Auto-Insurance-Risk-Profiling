@@ -13,7 +13,8 @@ from AutoInsurance.pipeline.stage_08_user_app import UserAppPipeline
 
 user_app = UserAppPipeline()
 risk_profile_model = user_app.main()
-risk_profiles_df = pd.read_csv(risk_profile_model.config.risk_profiles_path)
+
+risk_profiles_df = pd.read_csv(risk_profile_model.config.risk_profiles_path, dtype= {'agecat':'object', 'veh_age': 'object'} )
 
 test = pd.read_csv('artifacts/data_transformation/Processed_test_data.csv')
 columns = test.columns
@@ -108,7 +109,7 @@ elif action == "Risk Group Analysis Dashboard":
         for group in risk_groups:
             st.write(f"### {group}")
             group_data = risk_profiles_df[risk_profiles_df['risk_group'] == group]
-            st.write(group_data.describe())
+            st.write(group_data.iloc[:,1:].describe())
 
         # Plot distributions
         st.write("### Distributions of Key Features")
@@ -128,7 +129,7 @@ elif action == "Risk Group Analysis Dashboard":
 
         st.write(f"### Detailed Analysis for {selected_group}")
         group_data = risk_profiles_df[risk_profiles_df['risk_group'] == selected_group]
-        st.write(group_data.describe())
+        st.write(group_data.iloc[:,1:].describe())
 
         # Plot detailed distributions
         st.write("### Distributions of Key Features")
@@ -262,6 +263,8 @@ elif action == "Statistical Analysis of Risk Profiles":
                     st.table(value)
                 else:
                     st.write(f"{key.capitalize().replace('_', ' ')}: {value}")
+
+
 
     if analysis_type == "Demographic Analysis":
         st.write("## Demographic Analysis")
