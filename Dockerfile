@@ -18,3 +18,5 @@ EXPOSE 8501
 
 # Run Streamlit when the container launches
 CMD ["streamlit", "run", "app.py"]
+
+# Updated Docker file with copy ..
