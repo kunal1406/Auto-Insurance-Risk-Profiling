@@ -12,11 +12,11 @@ from AutoInsurance.pipeline.stage_08_user_app import UserAppPipeline
 
 
 user_app = UserAppPipeline()
-risk_profile_model = user_app.main()
+risk_profile_model, risk_profiles_df, test = user_app.main()
 
-risk_profiles_df = pd.read_csv(risk_profile_model.config.risk_profiles_path, dtype= {'agecat':'object', 'veh_age': 'object'} )
+# risk_profiles_df = pd.read_csv(risk_profile_model.config.risk_profiles_path, dtype= {'agecat':'object', 'veh_age': 'object'} )
 
-test = pd.read_csv('artifacts/data_transformation/Processed_test_data.csv')
+# test = pd.read_csv('artifacts/data_transformation/Processed_test_data.csv')
 columns = test.columns
 dtypes = test.dtypes
 
