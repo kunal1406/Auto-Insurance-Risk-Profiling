@@ -1,4 +1,4 @@
 {
-    "roc_auc_score": 0.8215734587778304,
-    "optimal_threshold": 0.15950706481270552
+    "roc_auc_score": 0.8216121393524245,
+    "optimal_threshold": 0.1556765082229533
 }
