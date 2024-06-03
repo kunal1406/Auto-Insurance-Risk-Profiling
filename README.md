@@ -6,6 +6,7 @@ MLFLOW_TRACKING_URI=https://dagshub.com/kunal1406/Auto-Insurance-Risk-Profiling.
 MLFLOW_TRACKING_USERNAME=kunal1406
 MLFLOW_TRACKING_PASSWORD=c1f8c1d6722f50e4980aec7e9eba0c1df1353ad6
 
+Set the variables in the environment
 
 $env:MLFLOW_TRACKING_URI = "https://dagshub.com/kunal1406/Auto-Insurance-Risk-Profiling.mlflow"
 $env:MLFLOW_TRACKING_USERNAME = "kunal1406"
@@ -52,8 +53,8 @@ AWS_SECRET_ACCESS_KEY=
 
 AWS_REGION = us-east-2
 
-AWS_ECR_LOGIN_URI = 193501411007.dkr.ecr.us-east-2.amazonaws.com/autoinsurance
+AWS_ECR_LOGIN_URI = 193501411007.dkr.ecr.us-east-2.amazonaws.com
 
-ECR_REPOSITORY_NAME = autoinsurance
+ECR_REPOSITORY_NAME = autoproj
 
-http://3.15.44.154:8501/
+http://18.118.109.162:8501/
