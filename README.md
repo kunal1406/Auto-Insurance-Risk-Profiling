@@ -11,17 +11,18 @@ $env:MLFLOW_TRACKING_URI = "https://dagshub.com/kunal1406/Auto-Insurance-Risk-Pr
 $env:MLFLOW_TRACKING_USERNAME = "kunal1406"
 $env:MLFLOW_TRACKING_PASSWORD = "c1f8c1d6722f50e4980aec7e9eba0c1df1353ad6"
 
-#Policy:
+# Policy:
 
 1. AmazonEC2ContainerRegistryFullAccess
 
 2. AmazonEC2FullAccess
 
 
-ECR repo link to store docker image
+# ECR repo link to store docker image
+
 193501411007.dkr.ecr.us-east-2.amazonaws.com/autoinsurance
 
-EC2 Instance
+# EC2 Instance
 
 Open EC2 and Install docker in EC2 Machine:
 
