@@ -55,6 +55,8 @@ AWS_REGION = us-east-2
 
 AWS_ECR_LOGIN_URI = 193501411007.dkr.ecr.us-east-2.amazonaws.com
 
+#
+
 ECR_REPOSITORY_NAME = autoproj
 
 http://18.118.109.162:8501/
