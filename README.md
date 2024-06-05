@@ -56,4 +56,6 @@ AWS_ECR_LOGIN_URI = 193501411007.dkr.ecr.us-east-2.amazonaws.com
 
 ECR_REPOSITORY_NAME = autoproj
 
-http://18.118.109.162:8501/
+# Link for the App
+
+http://18.224.141.64:8501/
