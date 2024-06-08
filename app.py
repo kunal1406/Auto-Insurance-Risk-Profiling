@@ -14,6 +14,10 @@ import os
 from fpdf import FPDF
 import unicodedata
 from AutoInsurance.components.chat_feature import DocumentAnalysis, RiskProfileAnalysis, InsuranceRiskProfileAnalyzer
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 
 user_app = UserAppPipeline()
 risk_profile_model, risk_profiles_df, test = user_app.main()

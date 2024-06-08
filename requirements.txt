@@ -28,4 +28,5 @@ SQLAlchemy
 fpdf
 pypdf
 chromadb
+pysqlite3-binary
 -e .
