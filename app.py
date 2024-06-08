@@ -9,7 +9,11 @@ import scipy.stats as stats
 import scikit_posthocs as sp
 import io
 from AutoInsurance.pipeline.stage_08_user_app import UserAppPipeline
-
+from AutoInsurance.utils.common import save_json
+import os
+from fpdf import FPDF
+import unicodedata
+from AutoInsurance.components.chat_feature import DocumentAnalysis, RiskProfileAnalysis, InsuranceRiskProfileAnalyzer
 
 user_app = UserAppPipeline()
 risk_profile_model, risk_profiles_df, test = user_app.main()
@@ -66,13 +70,15 @@ if action == "Risk Profile Prediction Report":
         claim_likelihood, claim_amount = risk_profile_model.predict(user_data, columns, dtypes)
         normalized_claim_likelihood, normalized_claim_amount = risk_profile_model.normalize_predictions(claim_likelihood, claim_amount)
         risk_profile = risk_profile_model.classify_risk(normalized_claim_likelihood, normalized_claim_amount, claim_likelihood, claim_amount)
+
+        save_json(Path("artifacts/user_app/risk_profile.json"), risk_profile)
         
         st.success('Risk Profile Predicted Successfully!')
         
-        st.write('### Risk Profile Report')
+        #st.write('### Risk Profile Report')
         # st.json(risk_profile)
         risk_profile_df = pd.DataFrame(list(risk_profile.items()), columns=['Feature', 'Value']).astype(str)
-        st.table(risk_profile_df)
+        # st.table(risk_profile_df)
 
 
         st.write("### Detailed Risk Profile")
@@ -93,6 +99,21 @@ if action == "Risk Profile Prediction Report":
         with col4:
             st.metric(label="Dynamic Combined Risk Score", value=f"{risk_profile['dynamic_combined_risk_score']:.2f}")
             st.metric(label="Risk Group", value=risk_profile['risk_group'])
+
+
+        ########################### CHAT ROWS #########################
+        analyzer = InsuranceRiskProfileAnalyzer()
+        context = risk_profile
+        response = analyzer.analyze_risk_profile(context)
+
+        st.write(response)
+
+
+
+
+
+
+        ########################### END ################################
 
 elif action == "Risk Group Analysis Dashboard":
     st.title('📊 Risk Group Analysis Dashboard')
@@ -131,6 +152,14 @@ elif action == "Risk Group Analysis Dashboard":
         group_data = risk_profiles_df[risk_profiles_df['risk_group'] == selected_group]
         st.write(group_data.iloc[:,1:].describe())
 
+        # save the risk group to json file
+        data_dict = group_data.to_dict(orient='dict')
+        filename = f"{selected_group} Profiles.json"
+        save_json(Path(f"artifacts/user_app/{filename}"), data_dict)
+
+        # save the risk group to csv file
+        group_data.to_csv(Path(f"artifacts/user_app/{selected_group} Profiles.csv"), index=False)
+
         # Plot detailed distributions
         st.write("### Distributions of Key Features")
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
@@ -141,11 +170,66 @@ elif action == "Risk Group Analysis Dashboard":
         plt.tight_layout()
         st.pyplot(fig)
 
+
+        ################################ CHAT #################################
+
+                # Implementing a chat feature in the sidebar
+    
+        with st.sidebar:
+            st.write("## Chat with us")
+            user_query = st.text_input("Enter your question:")
+            if user_query:
+                analysis = RiskProfileAnalysis(Path("artifacts/user_app/High Risk Profiles.csv"), Path("artifacts/user_app/Low Risk Profiles.csv"), Path("artifacts/user_app/Medium Risk Profiles.csv"))
+                data = analysis.load_data()
+                db = analysis.setup_database(data['df_high'], data['df_low'], data['df_medium'])
+                agent_executor = analysis.setup_chat_agent(db)
+                response = analysis.ask_question(agent_executor, user_query)
+                st.write(response)
+
+
+
+
+
+        ################################ END #################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 elif action == "Statistical Analysis of Risk Profiles":
     st.sidebar.title('Statistical Analysis of Risk Profiles')
     analysis_type = st.sidebar.radio("Select Analysis Type", ["Demographic Analysis", "Financial and Regional Analysis", "Vehicular Analysis"])
+##################     Start             ############################
+    class PDF(FPDF):
+        def header(self):
+            self.set_font('Arial', 'B', 12)
+            self.cell(0, 10, 'Risk Analysis Report', 0, 1, 'C')
 
+        def footer(self):
+            self.set_y(-15)
+            self.set_font('Arial', 'I', 8)
+            self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+
+    def safe_encode(text):
+        """ Encode the text to Latin-1, replacing unsupported characters """
+        return unicodedata.normalize('NFKD', text).encode('latin-1', 'replace').decode('latin-1')
+
+######################   END             ###################################
     def analyze_features(df, features):
+
         result = {}
         for feature in features:
             if pd.api.types.is_numeric_dtype(df[feature]):
@@ -156,6 +240,10 @@ elif action == "Statistical Analysis of Risk Profiles":
         return result
 
     def visualize_features(df, features):
+
+
+        figures = []
+
         palette = {'Low Risk': 'green', 'Medium Risk': 'orange', 'High Risk': 'red'}
         for feature in features:
             plt.figure(figsize=(12, 6))
@@ -166,6 +254,12 @@ elif action == "Statistical Analysis of Risk Profiles":
                 ax.set_xlabel('Risk Group')
                 ax.set_ylabel(feature.capitalize())
                 st.pyplot(fig)
+
+
+
+                figures.append(fig)
+
+
             else:
                 fig, ax = plt.subplots()
                 sns.countplot(x=feature, hue='risk_group', data=df, palette=palette, ax=ax)
@@ -173,6 +267,13 @@ elif action == "Statistical Analysis of Risk Profiles":
                 ax.set_xlabel(feature.capitalize())
                 ax.set_ylabel('Count')
                 st.pyplot(fig)
+
+
+                figures.append(fig)
+
+
+
+        return figures
 
     def statistical_analysis(df, features):
         results = {}
@@ -264,7 +365,53 @@ elif action == "Statistical Analysis of Risk Profiles":
                 else:
                     st.write(f"{key.capitalize().replace('_', ' ')}: {value}")
 
+#####################     start_analysis #################
 
+
+    def save_analysis_to_pdf(descriptive_stats, visualizations, hypothesis_testing_results, analysis_log, filename):
+        pdf = PDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+
+        # Add descriptive statistics
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, safe_encode('Descriptive Statistics'), 0, 1, 'L')
+        for feature, stat in descriptive_stats.items():
+            pdf.set_font('Arial', 'B', 12)
+            pdf.cell(0, 10, safe_encode(feature.capitalize()), 0, 1, 'L')
+            stat_string = safe_encode(stat.to_string(index=False))
+            pdf.set_font('Arial', size=10)
+            pdf.multi_cell(0, 10, stat_string)
+
+        # Save plots with unique filenames
+        for i, fig in enumerate(visualizations):
+            temp_img_path = f"/tmp/fig_{i}.png"
+            fig.savefig(temp_img_path, bbox_inches='tight')
+            pdf.add_page()
+            pdf.image(temp_img_path, x=None, y=None, w=190, h=100)
+            os.remove(temp_img_path)  # Clean up after adding to PDF
+
+        # Hypothesis Testing Results
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, safe_encode('Hypothesis Testing Results'), 0, 1, 'L')
+        for feature, results in hypothesis_testing_results.items():
+            pdf.set_font('Arial', 'B', 12)
+            pdf.cell(0, 10, safe_encode(feature.capitalize()), 0, 1, 'L')
+            for test, result in results.items():
+                result_string = safe_encode(f"{test.replace('_', ' ').capitalize()}: {result}")
+                pdf.multi_cell(0, 10, result_string)
+
+        # Analysis Log
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 14)
+        pdf.cell(0, 10, safe_encode('Analysis Log'), 0, 1, 'L')
+        pdf.set_font('Arial', size=10)
+        pdf.multi_cell(0, 10, safe_encode(analysis_log))
+
+        pdf.output(filename)
+############################   End of Analysis Log #########################
 
     if analysis_type == "Demographic Analysis":
         st.write("## Demographic Analysis")
@@ -275,12 +422,38 @@ elif action == "Statistical Analysis of Risk Profiles":
         descriptive_stats = analyze_features(df, demographic_features)
         display_descriptive_results(descriptive_stats)
         st.write("### Visualizations")
-        visualize_features(df, demographic_features)
+        visualizations = visualize_features(df, demographic_features)
+        print(visualizations)
         st.write("### Hypothesis Testing")
         hypothesis_testing_results, analysis_log = statistical_analysis(df, demographic_features)
         st.write("#### Analysis Log")
         st.text(analysis_log)
         display_hypothesis_analysis_results(hypothesis_testing_results)
+        filename = Path(f"artifacts/user_app/Demographic Analysis.pdf")
+        save_analysis_to_pdf(descriptive_stats, visualizations, hypothesis_testing_results, analysis_log, filename)
+
+        ############################# CHAT ############################
+
+
+        # Implementing a chat feature in the sidebar
+    
+        with st.sidebar:
+            st.write("## Chat with us")
+            user_query = st.text_input("Enter your question:")
+            if user_query:
+                analysis = DocumentAnalysis(file_path= Path("artifacts/user_app/Demographic Analysis.pdf"))
+                pages = analysis.load_document()
+                print(f"Document has {len(pages)} pages.")
+                splits = analysis.split_text(pages)
+                print(f"Document has been split into {len(splits)} text chunks.")
+                retriever = analysis.create_vector_store(splits)
+                prompt, model = analysis.setup_prompt_and_model()
+                question = user_query
+                answer = analysis.answer_query(retriever, prompt, model, question)
+                st.write(answer)
+
+
+        ########################### ENF ##############################
 
     elif analysis_type == "Financial and Regional Analysis":
         st.write("## Financial and Regional Analysis")
@@ -290,12 +463,30 @@ elif action == "Statistical Analysis of Risk Profiles":
         descriptive_stats = analyze_features(df, financial_and_regional_features)
         display_descriptive_results(descriptive_stats)
         st.write("### Visualizations")
-        visualize_features(df, financial_and_regional_features)
+        visualizations = visualize_features(df, financial_and_regional_features)
         st.write("### Hypothesis Testing")
         hypothesis_testing_results, analysis_log = statistical_analysis(df, financial_and_regional_features)
         st.write("#### Analysis Log")
         st.text(analysis_log)
         display_hypothesis_analysis_results(hypothesis_testing_results)
+        filename = Path(f"artifacts/user_app/Financial and Regional Analysis.pdf")
+        save_analysis_to_pdf(descriptive_stats, visualizations, hypothesis_testing_results, analysis_log, filename)
+
+        with st.sidebar:
+            st.write("## Chat with us")
+            user_query = st.text_input("Enter your question:")
+            if user_query:
+                analysis = DocumentAnalysis(file_path= Path("artifacts/user_app/Financial and Regional Analysis.pdf"))
+                pages = analysis.load_document()
+                print(f"Document has {len(pages)} pages.")
+                splits = analysis.split_text(pages)
+                print(f"Document has been split into {len(splits)} text chunks.")
+                retriever = analysis.create_vector_store(splits)
+                prompt, model = analysis.setup_prompt_and_model()
+                question = user_query
+                answer = analysis.answer_query(retriever, prompt, model, question)
+                st.write(answer)
+
 
     elif analysis_type == "Vehicular Analysis":
         st.write("## Vehicular Analysis")
@@ -306,9 +497,35 @@ elif action == "Statistical Analysis of Risk Profiles":
         descriptive_stats = analyze_features(df, vehicular_features)
         display_descriptive_results(descriptive_stats)
         st.write("### Visualizations")
-        visualize_features(df, vehicular_features)
+        visualizations = visualize_features(df, vehicular_features)
         st.write("### Hypothesis Testing")
         hypothesis_testing_results, analysis_log = statistical_analysis(df, vehicular_features)
         st.write("#### Analysis Log")
         st.text(analysis_log)
         display_hypothesis_analysis_results(hypothesis_testing_results)
+        filename = Path(f"artifacts/user_app/Vehicular Analysis.pdf")
+        save_analysis_to_pdf(descriptive_stats, visualizations, hypothesis_testing_results, analysis_log, filename)
+
+
+
+        with st.sidebar:
+            st.write("## Chat with us")
+            user_query = st.text_input("Enter your question:")
+            if user_query:
+                analysis = DocumentAnalysis(file_path= Path("artifacts/user_app/Vehicular Analysis.pdf"))
+                pages = analysis.load_document()
+                print(f"Document has {len(pages)} pages.")
+                splits = analysis.split_text(pages)
+                print(f"Document has been split into {len(splits)} text chunks.")
+                retriever = analysis.create_vector_store(splits)
+                prompt, model = analysis.setup_prompt_and_model()
+                question = user_query
+                answer = analysis.answer_query(retriever, prompt, model, question)
+                st.write(answer)
+        
+
+
+
+
+##################################################################################################
+
