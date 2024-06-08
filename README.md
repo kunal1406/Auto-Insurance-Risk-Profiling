@@ -59,3 +59,5 @@ ECR_REPOSITORY_NAME = autoproj
 # Link for the App
 
 http://18.224.141.64:8501/
+
+http://3.19.64.34:8501/
