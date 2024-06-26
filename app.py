@@ -14,17 +14,14 @@ import os
 from fpdf import FPDF
 import unicodedata
 from AutoInsurance.components.chat_feature import DocumentAnalysis, RiskProfileAnalysis, InsuranceRiskProfileAnalyzer
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+# __import__('pysqlite3')
+# import sys
+# sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 
 user_app = UserAppPipeline()
 risk_profile_model, risk_profiles_df, test = user_app.main()
 
-# risk_profiles_df = pd.read_csv(risk_profile_model.config.risk_profiles_path, dtype= {'agecat':'object', 'veh_age': 'object'} )
-
-# test = pd.read_csv('artifacts/data_transformation/Processed_test_data.csv')
 columns = test.columns
 dtypes = test.dtypes
 
@@ -106,6 +103,8 @@ if action == "Risk Profile Prediction Report":
 
 
         ########################### CHAT ROWS #########################
+
+        st.write("Generating description..")
         analyzer = InsuranceRiskProfileAnalyzer()
         context = risk_profile
         response = analyzer.analyze_risk_profile(context)
@@ -113,11 +112,10 @@ if action == "Risk Profile Prediction Report":
         st.write(response)
 
 
-
-
-
-
         ########################### END ################################
+
+
+
 
 elif action == "Risk Group Analysis Dashboard":
     st.title('📊 Risk Group Analysis Dashboard')
@@ -180,7 +178,7 @@ elif action == "Risk Group Analysis Dashboard":
                 # Implementing a chat feature in the sidebar
     
         with st.sidebar:
-            st.write("## Chat with us")
+            st.write("## Ask Questions")
             user_query = st.text_input("Enter your question:")
             if user_query:
                 analysis = RiskProfileAnalysis(Path("artifacts/user_app/High Risk Profiles.csv"), Path("artifacts/user_app/Low Risk Profiles.csv"), Path("artifacts/user_app/Medium Risk Profiles.csv"))
@@ -199,23 +197,11 @@ elif action == "Risk Group Analysis Dashboard":
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 elif action == "Statistical Analysis of Risk Profiles":
     st.sidebar.title('Statistical Analysis of Risk Profiles')
     analysis_type = st.sidebar.radio("Select Analysis Type", ["Demographic Analysis", "Financial and Regional Analysis", "Vehicular Analysis"])
+
+
 ##################     Start             ############################
     class PDF(FPDF):
         def header(self):
@@ -442,7 +428,7 @@ elif action == "Statistical Analysis of Risk Profiles":
         # Implementing a chat feature in the sidebar
     
         with st.sidebar:
-            st.write("## Chat with us")
+            st.write("## Ask questions")
             user_query = st.text_input("Enter your question:")
             if user_query:
                 analysis = DocumentAnalysis(file_path= Path("artifacts/user_app/Demographic Analysis.pdf"))
@@ -477,7 +463,7 @@ elif action == "Statistical Analysis of Risk Profiles":
         save_analysis_to_pdf(descriptive_stats, visualizations, hypothesis_testing_results, analysis_log, filename)
 
         with st.sidebar:
-            st.write("## Chat with us")
+            st.write("## Ask Questions")
             user_query = st.text_input("Enter your question:")
             if user_query:
                 analysis = DocumentAnalysis(file_path= Path("artifacts/user_app/Financial and Regional Analysis.pdf"))
@@ -513,7 +499,7 @@ elif action == "Statistical Analysis of Risk Profiles":
 
 
         with st.sidebar:
-            st.write("## Chat with us")
+            st.write("## Ask Questions")
             user_query = st.text_input("Enter your question:")
             if user_query:
                 analysis = DocumentAnalysis(file_path= Path("artifacts/user_app/Vehicular Analysis.pdf"))
