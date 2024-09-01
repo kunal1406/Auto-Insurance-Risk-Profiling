@@ -1,5 +1,9 @@
 # Auto Insurance Risk Profiling
 
+For a visual guide on how the tool works, please watch the following video
+
+https://www.youtube.com/watch?v=D8Uy5b8NTp0
+
 ## Purpose
 
 * This project develops an end to end tool designed to assist insurance managers and marketing teams in targeting potential customers, aiming to minimize claim amounts. 
