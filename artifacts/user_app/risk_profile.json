@@ -1,10 +1,10 @@
 {
-    "claim_likelihood": 0.5863391861833759,
-    "claim_amount": 10565.48064877188,
-    "normalized_claim_likelihood": 0.656534461632188,
-    "normalized_claim_amount": 0.2779260576302622,
-    "risk_profile_probability": "High",
+    "claim_likelihood": 0.08272571673423794,
+    "claim_amount": 2010.0830919151288,
+    "normalized_claim_likelihood": 0.08099823101816321,
+    "normalized_claim_amount": 0.05091010997385355,
+    "risk_profile_probability": "Medium",
     "risk_profile_cost": "Low",
-    "dynamic_combined_risk_score": 0.5050911000314177,
+    "dynamic_combined_risk_score": 0.060863159498623025,
     "risk_group": "High Risk"
 }

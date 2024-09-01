@@ -112,7 +112,9 @@ python app.py
 
 ## Usage
 
+For a visual guide on how the tool works, please watch the following video
 
+https://www.youtube.com/watch?v=D8Uy5b8NTp0
 
 
 
