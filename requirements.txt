@@ -29,4 +29,5 @@ fpdf
 pypdf
 chromadb
 pysqlite3-binary
+shap
 -e .
